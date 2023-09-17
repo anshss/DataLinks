@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: #191919;
+  color: #efe0e0
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bg{
+  /* background-image: url(https://img.freepik.com/free-photo/3d-cryptocurrency-rendering-design_23-2149074563.jpg?w=740&t=st=1682854792~exp=1682855392~hmac=e4c0e62c2554fca0f9606a54b874e58045bd8c8a3fbaa11131a253e514c73ad5); */
+  background-image: url(https://images.unsplash.com/photo-1639322537504-6427a16b0a28?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fGJsb2NrY2hhaW58ZW58MHx8MHx8&w=1000&q=80);
+  filter: grayscale(100);
+}
+
+.hero-wrapper {
+  height: 865px
+}
+
+@media (min-width: 768px) {
+  .hero-wrapper {
+      height:80vh
+  }
+}
+
+.bg-gel-black {
+  background-color: #202020;
+  background-color: rgb(var(32 32 32))
+}
+
+.hero-text {
+  color: #efe0e0;
+  color: var(--gel-color-pink);
+  font-size: 19px;
+  letter-spacing: -.5px;
+  max-width: 42rem;
+  opacity: .5
+}
+
+@media only screen and (max-height: 768px) and (min-width:768px) {
+  .hero-title {
+      font-size:52px;
+      letter-spacing: -.06em;
+      line-height: 108%
+  }
+
+   .hero-image {
+      bottom: -30%;
+      max-width: 35%
+  }
+}
+
+.gel-gradient-text-blue {
+  background-image: linear-gradient(274.27deg,#4b507a 2.64%,#a2c7ff 95.69%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.hero-title {
+    font-size: 52px;
+    letter-spacing: -.06em;
+    line-height: 108%;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    overflow-wrap: break-word;
+}
+
+.form-input{
+  background-color: #191919;
+  border-radius: 1rem;
+  display: block;
+  font-size: .875rem;
+  line-height: 1.25rem;
+  transition-duration: .3s;
+  transition-property: color,background-color,border-color,text-decoration-color,fill,stroke;
+  transition-timing-function: cubic-bezier(.4,0,.2,1);
+  width: 100%;
+}
+
+.gradient-blue {
+  background: #3872DD;
+}
+
+.gel-gradient-text-peach, .odometer-value {
+  background-image: linear-gradient(90deg,#f5c3a6,#b45f63);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.solid-gradient:not(.outlined) {
+  --tw-text-opacity: 1;
+  color: #202020;
+  color: rgb(var(--gel-color-black)/var(--tw-text-opacity));
+  position: relative;
+}
+
+
+.hero-button {
+  border-radius: 9999px;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  transition-duration: .2s;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(.4,0,.2,1);
+}
+
+.solid-gradient:not(.outlined):before {
+  border-radius: 9999px;
+  content: "";
+  inset: 0;
+  padding: 2px;
+  position: absolute;
+  z-index: -1;
+}
+.hero-button:after, .hero-button:before {
+  border-radius: 9999px;
+  content: "";
+  inset: 0;
+  position: absolute;
+  transition-duration: .4s;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(.7,0,.84,0);
+  transition-timing-function: cubic-bezier(.4,0,.2,1);
+  z-index: 0;
+}
+
+.gradient-peach:not(.outlined):after {
+  background-image: linear-gradient(90deg,#f5c2a5,#dea08f);
+}
+
+.hero-button {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+@media (min-width: 1024px){
+  .hero-button {
+    color: inherit;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
