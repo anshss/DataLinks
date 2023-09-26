@@ -289,9 +289,9 @@ const setViewCollection = async () => {
                     onChange={handleChange}
                     sx={{ color: "white", borderColor: "gray" }}
                   >
-                    <MenuItem value={"file"}>File</MenuItem>
-                    <MenuItem value={"paid"}>File (paid)</MenuItem>
-                    <MenuItem value={"link"}>Link</MenuItem>
+                    {/* <MenuItem value={"file"}>File</MenuItem> */}
+                    <MenuItem value={"paid"}>Lighthouse</MenuItem>
+                    {/* <MenuItem value={"link"}>Link</MenuItem> */}
                   </Select>
                 </FormControl>
               </div>

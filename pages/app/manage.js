@@ -1,42 +1,42 @@
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
 import { upload } from "@spheron/browser-upload";
 import { useState } from "react";
 import { Database } from "@tableland/sdk";
-import LinkCard from '@/components/linkCard';
+import LinkCard from "@/components/linkCard";
 
 export default function Dashboard() {
     const [inputLink, setInputLink] = useState("");
-    const [linkData, setLinkData] = useState([])
+    const [linkData, setLinkData] = useState([]);
     const [location, setLocation] = useState();
-    const [open, setOpen] = useState()
-    console.log(linkData)
+    const [open, setOpen] = useState();
+    console.log(linkData);
     useEffect(() => {
         setLocation(window.location);
-      }, []);
+    }, []);
 
-    const tableName = "linko_links_80001_6516"; 
-    const id = "link1"
+    const tableName = "linko_links_80001_6516";
+    const id = "link1";
 
     const db = new Database();
-    async function getData(){
-        try{
-            const { results } = await db.prepare(`SELECT * FROM ${tableName};`).all();
-            setLinkData(results)
+    async function getData() {
+        try {
+            const { results } = await db
+                .prepare(`SELECT * FROM ${tableName};`)
+                .all();
+            setLinkData(results);
+        } catch (e) {
+            console.log(e);
         }
-        catch(e){
-            console.log(e)
-        }
-     }
+    }
 
-     console.log(linkData)
-     useEffect(() => {
-        getData()
-     }, [])
+    console.log(linkData);
+    useEffect(() => {
+        getData();
+    }, []);
 
-     console.log()
-
+    console.log();
 
     // ---------- spheron
 
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
     // ----------
 
-    console.log(open)
+    console.log(open);
 
     return (
         <div>
@@ -82,11 +82,23 @@ export default function Dashboard() {
                         type="name"
                         onChange={(e) => setInputLink(e.target.value)}
                     /> */}
-                    <h2 className='text-center text-4xl font-bold mt-4'>Your Linkos</h2>
+                    <h2 className="text-center text-4xl font-bold mt-4">
+                        Your Linkos
+                    </h2>
 
                     {linkData.map((item, index) => {
-                        return <LinkCard getData={getData} onClick={() => setOpen(index)} open={index===open} redirectTo={item.link} key={item.id} id={item.id} link={location?.origin + "/" + item.id}/>
-                    }) }
+                        return (
+                            <LinkCard
+                                getData={getData}
+                                onClick={() => setOpen(index)}
+                                open={index === open}
+                                redirectTo={item.link}
+                                key={item.id}
+                                id={item.id}
+                                link={location?.origin + "/" + item.id}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         </div>
