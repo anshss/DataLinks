@@ -12,11 +12,18 @@ import { ethers } from "ethers";
 import lighthouse from "@lighthouse-web3/sdk";
 import { nftContractAddress, nftContractAbi } from "../config.js";
 import web3modal from "web3modal";
+import { Web3Storage } from "web3.storage";
 // import Link from "next/link";
 // import { upload } from "@spheron/browser-upload";
 // import { DataverseConnector } from '@dataverse/dataverse-connector';
 // import { RESOURCE } from "@dataverse/dataverse-connector";
-import { DataverseConnector, WALLET, SYSTEM_CALL, RESOURCE } from "@dataverse/dataverse-connector";
+import {
+    DataverseConnector,
+    WALLET,
+    SYSTEM_CALL,
+    RESOURCE,
+    Currency,
+} from "@dataverse/dataverse-connector";
 
 export default function LinkCard({
     link,
@@ -30,7 +37,6 @@ export default function LinkCard({
     const tableName = "linko_links_80001_6516";
 
     const dataverseConnector = new DataverseConnector();
-    const appId = "Linkwink";
 
     const [type, setType] = useState("file");
     const [redirectLink, setRedirectLink] = useState("");
@@ -38,6 +44,7 @@ export default function LinkCard({
     const [price, setPrice] = useState("");
     const [cid, setCid] = useState("");
     const [wallet, setWallet] = useState();
+    const [conditionAddress, setConditionAddress] = useState();
 
     console.log(redirectLink);
     const lighthouseKey = process.env.NEXT_PUBLIC_LIGHTHOUSE_KEY;
@@ -177,52 +184,41 @@ export default function LinkCard({
 
     // upload with dataverse
 
+    const login = async () => {
+        await connectWallet();
+        await createCapability();
+    };
+
     const connectWallet = async () => {
         try {
             const res = await dataverseConnector.connectWallet();
             setWallet(res.wallet);
-            // console.log(res.address);
             return res.address;
         } catch (error) {
             console.error(error);
         }
     };
 
+    const app = "Linkwink";
+
     const createCapability = async () => {
         const pkh = await dataverseConnector.runOS({
             method: SYSTEM_CALL.createCapability,
             params: {
-                appId,
+                appId: "134e3f10-221c-4bfe-8319-ef2388605e2d",
                 resource: RESOURCE.CERAMIC,
                 wallet,
             },
         });
+        console.log("done");
         return pkh;
     };
 
-    const post = {
-        author: { type: "DID", required: true, relation: "documentAccount" },
-        version: { type: "CommitID", required: true },
-        appVersion: { type: "String", required: true, maxLength: 100 },
-        text: { type: "String", maxLength: 300000000 },
-        images: {
-            type: "String",
-            list: true,
-            maxLength: 10000000,
-            innerType: { type: "String", maxLength: 2000000 },
-        },
-        videos: {
-            type: "String",
-            list: true,
-            maxLength: 10000000,
-            innerType: { type: "String", maxLength: 2000000 },
-        },
-        options: { type: "String", maxLength: 300000000 },
-        createdAt: { type: "DateTime", required: true },
-        updatedAt: { type: "DateTime", required: true },
-    };
-
     const uploadWithDataverse = async (e) => {
+        setLoading(true);
+
+        const fileLink = await uploadImageToIPFS(e);
+
         const encrypted = JSON.stringify({
             text: false,
             images: false,
@@ -232,21 +228,145 @@ export default function LinkCard({
         const res = await dataverseConnector.runOS({
             method: SYSTEM_CALL.createStream,
             params: {
-                post,
+                modelId:
+                    "kjzl6hvfrbw6c9yiu34m9yqjdlldrsspbxdns0xxudolli44qjgwjjd048vapqq",
                 streamContent: {
                     appVersion: "0.1.0",
-                    text: "hello",
-                    images: [
-                        "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
-                    ],
+                    text: "file",
+                    images: [fileLink],
                     videos: [],
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     encrypted,
                 },
+                decryptionConditions: [
+                    {
+                        conditionType: "evmBasic",
+                        contractAddress: "",
+                        standardContractType: "",
+                        chain: "filecoin",
+                        method: "",
+                        parameters: [":userAddress"],
+                        returnValueTest: {
+                            comparator: "=",
+                            value: conditionAddress,
+                        },
+                    },
+                ],
             },
         });
-        console.log(res)
+        console.log("stream id:", res.streamId);
+
+        const linkId = await getLinkoId();
+        setRedirectLink(location?.origin + "/dataverse/" + (+res.streamId));
+        console.log(redirectLink)
+        setLoading(false);
+    };
+
+    const loadDataverse = async () => {
+        const streamId =
+            "kjzl6kcym7w8y98lv98ll0rtzkfcflw9njf944xj596a7eaqiwzjm3atdihkake";
+        const res = await dataverseConnector.runOS({
+            method: SYSTEM_CALL.loadStream,
+            params: streamId,
+        });
+
+        console.log(res.streamContent.content.images[0]);
+    };
+
+
+    // const uploadMonetizedWithDataverse = async (e) => {
+    //     setLoading(true);
+
+    //     const fileLink = await uploadImageToIPFS(e);
+
+    //     const encrypted = JSON.stringify({
+    //         text: false,
+    //         images: false,
+    //         videos: false,
+    //     });
+
+    //     const res = await dataverseConnector.runOS({
+    //         method: SYSTEM_CALL.createStream,
+    //         params: {
+    //             modelId:
+    //                 "kjzl6hvfrbw6c9yiu34m9yqjdlldrsspbxdns0xxudolli44qjgwjjd048vapqq",
+    //             streamContent: {
+    //                 appVersion: "0.1.0",
+    //                 text: "file",
+    //                 images: [fileLink],
+    //                 videos: [],
+    //                 createdAt: new Date().toISOString(),
+    //                 updatedAt: new Date().toISOString(),
+    //                 encrypted,
+    //             },
+    //             // (indexFileId ? { indexFileId } : { streamId }),
+    //             datatokenVars: {
+    //                 profileId: "anshss.test",
+    //                 collectLimit: 100,
+    //                 amount: 0.0001,
+    //                 currency: Currency.WMATIC,
+    //             },
+    //             decryptionConditions: [
+    //                 {
+    //                     conditionType: "evmBasic",
+    //                     contractAddress: "",
+    //                     standardContractType: "",
+    //                     chain: "filecoin",
+    //                     method: "",
+    //                     parameters: [":userAddress"],
+    //                     returnValueTest: {
+    //                         comparator: "=",
+    //                         value: "0x48e6a467852Fa29710AaaCDB275F85db4Fa420eB",
+    //                     },
+    //                 },
+    //             ],
+    //         },
+    //     });
+    //     console.log("stream id:", res.streamId);
+
+    //     const linkId = await getLinkoId();
+    //     setRedirectLink(location?.origin + "/file/" + (+linkId + 1));
+    //     setLoading(false);
+    // };
+
+    // const loadMonetizedDataverse = async () => {
+    //   const streamId =
+    //   "kjzl6kcym7w8y98lv98ll0rtzkfcflw9njf944xj596a7eaqiwzjm3atdihkake";
+
+    //     await dataverseConnector.runOS({
+    //         method: SYSTEM_CALL.unlock,
+    //         params: {
+    //             indexFileId: streamId,
+    //         },
+    //     });
+
+    //     console.log(res.streamContent.content.images[0]);
+    // };
+
+    async function uploadImageToIPFS(e) {
+        const inputFile = e.target.files[0];
+        const inputFileName = e.target.files[0].name;
+        const files = [new File([inputFile], inputFileName)];
+        const metaCID = await uploadToIPFS(files);
+        const url = `https://ipfs.io/ipfs/${metaCID}/data.json`;
+        console.log("ipfs:", url);
+        return url;
+    }
+
+    function getAccessToken() {
+        // return process.env.NEXT_PUBLIC_Web3StorageID
+        return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDkyMjkyQjQ5YzFjN2ExMzhERWQxQzQ3NGNlNmEyNmM1NURFNWQ0REQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjUyMzg2MDc1NDEsIm5hbWUiOiJNZXRhRmkifQ.cwyjEIx8vXtTnn8Y3vctroo_rooHV4ww_2xKY-MT0rs";
+    }
+
+    function makeStorageClient() {
+        return new Web3Storage({ token: getAccessToken() });
+    }
+
+    const uploadToIPFS = async (files) => {
+        const client = makeStorageClient();
+        const cid = await client.put(files);
+        return cid;
     };
 
     // upload with spheron
@@ -407,17 +527,39 @@ export default function LinkCard({
                                             id="large_size"
                                             type="file"
                                         />
-                                        <button onClick={uploadWithDataverse}>
+
+                                        <input
+                                            onChange={(e) =>
+                                                setConditionAddress(e.target.value)
+                                            }
+                                            className="block w-full text-lg py-2.5 my-1 bg-transparent text-gray-900 border border-gray-300 rounded-sm  cursor-pointer  dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400"
+                                            id="large_size"
+                                            type="text"
+                                        />
+
+                                        <button onClick={login}>Connect</button>
+                                        {/* <button onClick={loadDataverse}>
+                                            Load
+                                        </button> */}
+                                        {/* <button
+                                            onClick={loadMonetizedDataverse}
+                                        >
+                                            LoadMonetized
+                                        </button> */}
+
+                                        {/* <br></br> */}
+
+                                        {/* <input
+                                            onChange={uploadWithDataverse}
+                                            className="block w-full text-lg py-2.5 my-1 text-gray-900 border border-gray-300 rounded-sm  cursor-pointer  dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400"
+                                            id="large_size"
+                                            type="file"
+                                        >
                                             Upload
-                                        </button>
-
-                                        <button onClick={connectWallet}>
-                                            Connect Wallet
-                                        </button>
-
-                                        <button onClick={createCapability}>
+                                        </input> */}
+                                        {/* <button onClick={createCapability}>
                                             Create Capability
-                                        </button>
+                                        </button> */}
                                     </div>
                                 ) : (
                                     // type === "lighthouse" ?
