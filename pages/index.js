@@ -46,7 +46,7 @@ export default function Home() {
                                 className="hero-button px-8 solid-gradient gradient-peach w-full md:w-auto text-black"
                             >
                                 <span className="relative z-10 text-[#202020]">
-                                    Create a Linko
+                                    Create a LinkIt
                                 </span>
                             </button>
                             {/* <a

@@ -50,7 +50,7 @@ export default function Dashboard() {
                         onChange={(e) => setInputLink(e.target.value)}
                     /> */}
                     <h2 className="text-center text-4xl font-bold mt-4">
-                        Your Linkos
+                        Your LinkIt&apos;s
                     </h2>
 
                     {linkData.map((item, index) => {

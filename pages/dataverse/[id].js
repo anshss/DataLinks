@@ -2,12 +2,27 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { saveAs } from "file-saver";
+import {
+    DataverseConnector,
+    WALLET,
+    SYSTEM_CALL,
+    RESOURCE,
+    Currency,
+} from "@dataverse/dataverse-connector";
 // import web3modal from "web3modal";
 // import { ethers } from "ethers";
 // import lighthouse from "@lighthouse-web3/sdk";
 // import { nftContractAddress, nftContractAbi } from "../../config.js";
 
-export default function Files() {
+export default function Dataverse() {
+
+    const [wallet, setWallet] = useState();
+
+    let dataverseConnector ;
+    if (typeof window !== "undefined") {
+        dataverseConnector = new DataverseConnector();
+    }
+
     const router = useRouter();
     const { id } = router.query;
 
@@ -42,16 +57,17 @@ export default function Files() {
         // let price_ = ethers.utils.formatEther(data.price);
         // let usdPrice_ = ethers.utils.formatEther(data.usdPrice);
         // console.log(data[4].toNumber())
-        setLinkoData(
-            {
-                cid: id,
-                // price: price_,
-                // usdPrice: usdPrice_,
-                // host: data[3].toString(),
-                linkoId: id,
-            }
-        )
+        setLinkoData({
+            cid: id,
+            // price: price_,
+            // usdPrice: usdPrice_,
+            // host: data[3].toString(),
+            linkoId: id,
+        });
     }
+
+    const [fName, setfName] = useState()
+    const [fLink, setfLink] = useState()
 
     const loadDataverse = async (streamId) => {
         // const streamId =
@@ -62,13 +78,16 @@ export default function Files() {
         });
 
         console.log(res.streamContent.content.images[0]);
-        return res.streamContent.content.images[0]
+        console.log(res.streamContent.content.text)
+        setfLink(res.streamContent.content.images[0])
+        setfName(res.streamContent.content.text)
     };
 
     const buy = async () => {
-        const fileUrl = await loadDataverse(id)
-        Download(id, fileUrl)
-    }
+        await loadDataverse(id);
+        // const fileName = await 
+        Download(fName, fLink);
+    };
 
     // const buyAccess = async (prop) => {
     //     const modal = new web3modal();
@@ -129,10 +148,41 @@ export default function Files() {
     //     Download(cid, url);
     // };
 
+    const login = async () => {
+        await connectWallet();
+        await createCapability();
+    };
+
+    const connectWallet = async () => {
+        try {
+            const res = await dataverseConnector.connectWallet();
+            setWallet(res.wallet);
+            return res.address;
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const app = "Linkwink";
+
+    const createCapability = async () => {
+        const pkh = await dataverseConnector.runOS({
+            method: SYSTEM_CALL.createCapability,
+            params: {
+                appId: "134e3f10-221c-4bfe-8319-ef2388605e2d",
+                resource: RESOURCE.CERAMIC,
+                wallet,
+            },
+        });
+        console.log("done");
+        return pkh;
+    };
+
     function Download(_fileName, _fileUrl) {
         const name = _fileName;
-        const fileUrl = _fileUrl;
-        saveAs(fileUrl, name);
+        const fileUrl = _fileUrl ;
+        console.log("files:", _fileUrl, _fileName)
+        saveAs(_fileUrl, _fileName);
     }
 
     return (
@@ -141,7 +191,7 @@ export default function Files() {
                 <div className="flex justify-between">
                     <div>
                         <p className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            CID: {linkoData.cid}
+                            Stream ID: {linkoData.cid}
                         </p>
                     </div>
                 </div>
@@ -151,14 +201,24 @@ export default function Files() {
                         {/* price: {linkoData.price}FIL | USD Price : $ */}
                         {linkoData.usdPrice}
                     </p>
-                    <button
-                        onClick={() => {
-                            buy();
-                        }}
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >
-                        Buy
-                    </button>
+                    <div className="gap-4">
+                        <button
+                            onClick={() => {
+                                login();
+                            }}
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        >
+                            Connect
+                        </button>
+                        <button
+                            onClick={() => {
+                                buy();
+                            }}
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        >
+                            Download
+                        </button>
+                    </div>
                 </div>
 
                 {/* {

@@ -126,20 +126,30 @@ export default function LinkCard({
 
     const uploadWithLighthouse = async (e) => {
         setLoading(true);
+        // console.log("files:", e.target.files)
         const sig = await encryptionSignature();
+        const pathToFile = "/Users/anshs/Downloads/downloads/wallpapers/1640427040463.png"
+
         const response = await lighthouse.uploadEncrypted(
-            e,
+            e.target.files[0],
+            // pathToFile,
             lighthouseKey,
             sig.publicKey,
             sig.signedMessage,
             progressCallback
         );
-        console.log(response);
+        // console.log(
+        //     e.target.files[0],
+        //     lighthouseKey,
+        //     sig.publicKey,
+        //     sig.signedMessage,
+        // )
+        console.log("res:", response);
 
-        applyAccessConditions(response.data.Hash);
-        const linkId = await getLinkoId();
-        setRedirectLink(location?.origin + "/paid/" + (+linkId + 1));
-        setCid(response.data.Hash);
+        // applyAccessConditions(response.data.Hash);
+        // const linkId = await getLinkoId();
+        // setRedirectLink(location?.origin + "/paid/" + (+linkId + 1));
+        // setCid(response.data.Hash);
         setLoading(false);
     };
 
@@ -218,6 +228,7 @@ export default function LinkCard({
         setLoading(true);
 
         const fileLink = await uploadImageToIPFS(e);
+        const textData = e.target.files[0].name;
 
         const encrypted = JSON.stringify({
             text: false,
@@ -232,7 +243,7 @@ export default function LinkCard({
                     "kjzl6hvfrbw6c9yiu34m9yqjdlldrsspbxdns0xxudolli44qjgwjjd048vapqq",
                 streamContent: {
                     appVersion: "0.1.0",
-                    text: "file",
+                    text: textData,
                     images: [fileLink],
                     videos: [],
                     createdAt: new Date().toISOString(),
@@ -257,9 +268,11 @@ export default function LinkCard({
         });
         console.log("stream id:", res.streamId);
 
-        const linkId = await getLinkoId();
-        setRedirectLink(location?.origin + "/dataverse/" + (+res.streamId));
-        console.log(redirectLink)
+        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        await delay(1000);
+        setRedirectLink(location?.origin + `/dataverse/${res.streamId}`);
+
+        // console.log(redirectLink)
         setLoading(false);
     };
 
@@ -349,7 +362,7 @@ export default function LinkCard({
         const inputFileName = e.target.files[0].name;
         const files = [new File([inputFile], inputFileName)];
         const metaCID = await uploadToIPFS(files);
-        const url = `https://ipfs.io/ipfs/${metaCID}/data.json`;
+        const url = `https://ipfs.io/ipfs/${metaCID}/${inputFileName}`;
         console.log("ipfs:", url);
         return url;
     }
